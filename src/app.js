@@ -2,6 +2,7 @@ import cors from 'cors';
 import express from 'express';
 
 import authRouter from './routes/auth.routes.js';
+import userRouter from './routes/users.routes.js';
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/api/v1/auth', authRouter);
+app.use('/api/v1/users', userRouter);
 
 app.use((err, _req, res, _next) => {
   const statusCode = err.statusCode || 500;
