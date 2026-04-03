@@ -65,6 +65,7 @@ const buildRefreshToken = ({ user, sessionId }) =>
   );
 
 const createSessionAndTokens = async (client, user, metadata = {}) => {
+  // Store only a hash of the refresh token so leaked session rows cannot be reused as live tokens.
   const sessionId = crypto.randomUUID();
   const accessToken = buildAccessToken(user);
   const refreshToken = buildRefreshToken({ user, sessionId });
@@ -239,6 +240,7 @@ const refreshAuthSessionService = async ({ refreshToken, metadata }) => {
       throw new ApiError(401, 'Refresh token has expired');
     }
 
+    // Rotate refresh sessions on every successful refresh to reduce replay risk.
     await client.query('UPDATE auth_sessions SET revoked_at = NOW() WHERE id = $1', [
       session.auth_session_id,
     ]);
@@ -331,6 +333,7 @@ const changePasswordService = async ({ userId, currentPassword, newPassword, met
       [newPasswordHash, userId]
     );
 
+    // Invalidate every active session so older access and refresh tokens stop working immediately.
     await client.query(
       `UPDATE auth_sessions
        SET revoked_at = NOW()

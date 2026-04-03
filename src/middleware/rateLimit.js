@@ -24,6 +24,7 @@ const createJsonRateLimiter = ({ windowMs, max, message }) =>
     standardHeaders: 'draft-8',
     legacyHeaders: false,
     handler: (req, res, _next, options) => {
+      // Keep rate-limit responses in the same JSON shape as the rest of the API.
       const retryAfterSeconds = req.rateLimit?.resetTime
         ? Math.max(1, Math.ceil((req.rateLimit.resetTime.getTime() - Date.now()) / 1000))
         : undefined;

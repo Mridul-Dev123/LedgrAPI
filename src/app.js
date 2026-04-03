@@ -1,7 +1,9 @@
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import express from 'express';
+import swaggerUi from 'swagger-ui-express';
 
+import swaggerSpec from './docs/swagger.js';
 import authRouter from './routes/auth.routes.js';
 import dashboardRouter from './routes/dashboard.routes.js';
 import { apiLimiter } from './middleware/rateLimit.js';
@@ -21,9 +23,35 @@ app.use(express.json({ limit: '100kb' }));
 app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 app.use(cookieParser());
 
+/**
+ * @swagger
+ * /health:
+ *   get:
+ *     summary: Check API health
+ *     tags: [Health]
+ *     responses:
+ *       200:
+ *         description: Server is healthy.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Server is healthy
+ */
 app.get('/health', (_req, res) => {
   res.status(200).json({ success: true, message: 'Server is healthy' });
 });
+
+app.get('/api-docs.json', (_req, res) => {
+  res.status(200).json(swaggerSpec);
+});
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, { explorer: true }));
 
 app.use('/api/v1', apiLimiter);
 app.use('/api/v1/auth', authRouter);

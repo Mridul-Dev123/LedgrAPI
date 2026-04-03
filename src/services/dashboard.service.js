@@ -99,6 +99,7 @@ const getDashboardInsightsService = async ({ startDate, endDate }) => {
 
   const whereClause = conditions.join(' AND ');
 
+  // These queries are independent, so running them together keeps the dashboard endpoint responsive.
   const [categoryBreakdownResult, monthlyTrendResult, weeklyTrendResult] = await Promise.all([
     pool.query(
       `SELECT
@@ -146,7 +147,9 @@ const getDashboardInsightsService = async ({ startDate, endDate }) => {
     categoryBreakdown: categoryBreakdownResult.rows.map((row) =>
       serializeNumericRow(row, ['transaction_count', 'total_amount'])
     ),
+    // Using the first day of the month keeps month buckets easy to sort and chart on the client.
     monthlyTrend: monthlyTrendResult.rows.map((row) => serializeTrendRow(row, 'month')),
+    // PostgreSQL week buckets start at the week boundary, which is useful for week-over-week comparisons.
     weeklyTrend: weeklyTrendResult.rows.map((row) => serializeTrendRow(row, 'week_start')),
   };
 };
