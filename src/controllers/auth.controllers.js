@@ -10,23 +10,6 @@ import { ApiError, ApiResponse, asyncHandler } from '../utils/index.js';
 
 const REFRESH_COOKIE_NAME = 'refreshToken';
 
-const parseCookies = (cookieHeader = '') =>
-  cookieHeader.split(';').reduce((cookies, cookiePart) => {
-    const [rawKey, ...rawValueParts] = cookiePart.trim().split('=');
-
-    if (!rawKey) {
-      return cookies;
-    }
-
-    cookies[rawKey] = decodeURIComponent(rawValueParts.join('='));
-    return cookies;
-  }, {});
-
-const getRefreshTokenFromRequest = (req) => {
-  const cookies = parseCookies(req.headers.cookie);
-  return cookies[REFRESH_COOKIE_NAME] || req.body?.refreshToken || null;
-};
-
 const getRefreshCookieOptions = (refreshTokenExpiresAt) => ({
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
@@ -34,6 +17,8 @@ const getRefreshCookieOptions = (refreshTokenExpiresAt) => ({
   path: '/api/v1/auth',
   expires: refreshTokenExpiresAt,
 });
+
+const getRefreshTokenFromRequest = (req) => req.cookies?.[REFRESH_COOKIE_NAME] || null;
 
 const clearRefreshCookie = (res) => {
   res.clearCookie(REFRESH_COOKIE_NAME, {

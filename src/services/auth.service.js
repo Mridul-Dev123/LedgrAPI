@@ -314,6 +314,12 @@ const changePasswordService = async ({ userId, currentPassword, newPassword, met
       throw new ApiError(401, 'Current password is incorrect');
     }
 
+    const isSamePassword = await bcrypt.compare(newPassword, user.password_hash);
+
+    if (isSamePassword) {
+      throw new ApiError(400, 'New password must be different from the current password');
+    }
+
     const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS) || 10;
     const newPasswordHash = await bcrypt.hash(newPassword, saltRounds);
 
