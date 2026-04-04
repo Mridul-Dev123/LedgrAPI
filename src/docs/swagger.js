@@ -5,6 +5,7 @@ import swaggerJsdoc from 'swagger-jsdoc';
 
 const currentFilePath = fileURLToPath(import.meta.url);
 const currentDirectory = path.dirname(currentFilePath);
+const publicBaseUrl = process.env.PUBLIC_BASE_URL || '';
 
 const swaggerDefinition = {
   openapi: '3.0.3',
@@ -16,8 +17,8 @@ const swaggerDefinition = {
   },
   servers: [
     {
-      url: `http://localhost:${process.env.PORT || 5000}`,
-      description: 'Local development server',
+      url: publicBaseUrl || '/',
+      description: publicBaseUrl ? 'Public deployment server' : 'Current server origin',
     },
   ],
   tags: [
