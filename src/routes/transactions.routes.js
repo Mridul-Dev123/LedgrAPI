@@ -51,6 +51,18 @@ transactionRouter.use(verifyJWT);
  *         schema:
  *           type: string
  *           example: rent
+ *       - name: page
+ *         in: query
+ *         description: Page number for pagination.
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - name: limit
+ *         in: query
+ *         description: Number of items per page.
+ *         schema:
+ *           type: integer
+ *           default: 10
  *     responses:
  *       200:
  *         description: Transactions fetched successfully.
@@ -64,9 +76,23 @@ transactionRouter.use(verifyJWT);
  *                     message:
  *                       example: Transactions fetched successfully
  *                     data:
- *                       type: array
- *                       items:
- *                         $ref: '#/components/schemas/Transaction'
+ *                       type: object
+ *                       properties:
+ *                         transactions:
+ *                           type: array
+ *                           items:
+ *                             $ref: '#/components/schemas/Transaction'
+ *                         pagination:
+ *                           type: object
+ *                           properties:
+ *                             page:
+ *                               type: integer
+ *                             limit:
+ *                               type: integer
+ *                             totalCount:
+ *                               type: integer
+ *                             totalPages:
+ *                               type: integer
  *       400:
  *         $ref: '#/components/responses/BadRequest'
  *       401:

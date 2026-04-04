@@ -65,6 +65,8 @@ const listTransactions = asyncHandler(async (req, res) => {
   const startDate = parseOptionalDate(req.query.startDate, 'startDate');
   const endDate = parseOptionalDate(req.query.endDate, 'endDate');
   const search = req.query.search?.trim();
+  const page = req.query.page ? parsePositiveInteger(req.query.page, 'page') : 1;
+  const limit = req.query.limit ? parsePositiveInteger(req.query.limit, 'limit') : 10;
 
   if (type) {
     validateTransactionType(type);
@@ -74,17 +76,19 @@ const listTransactions = asyncHandler(async (req, res) => {
     throw new ApiError(400, 'startDate cannot be greater than endDate');
   }
 
-  const transactions = await listTransactionsService({
+  const paginatedResult = await listTransactionsService({
     type,
     category,
     startDate,
     endDate,
     search,
+    page,
+    limit,
   });
 
   return res
     .status(200)
-    .json(new ApiResponse(200, transactions, 'Transactions fetched successfully'));
+    .json(new ApiResponse(200, paginatedResult, 'Transactions fetched successfully'));
 });
 
 const getTransactionById = asyncHandler(async (req, res) => {

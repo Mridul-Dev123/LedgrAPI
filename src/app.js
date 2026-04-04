@@ -13,6 +13,9 @@ import { ApiError } from './utils/index.js';
 
 const app = express();
 
+// Trust first proxy (Railway/Render/etc.) so req.ip and rate-limiters see client IP correctly.
+app.set('trust proxy', 1);
+
 app.use(
   cors({
     origin: true,

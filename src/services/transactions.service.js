@@ -37,7 +37,15 @@ const insertAuditLog = async (client, { action, entity, entityId, actorId, metad
   );
 };
 
-const listTransactionsService = async ({ type, category, startDate, endDate, search }) => {
+const listTransactionsService = async ({
+  type,
+  category,
+  startDate,
+  endDate,
+  search,
+  page = 1,
+  limit = 10,
+}) => {
   const conditions = ['t.is_deleted = FALSE'];
   const values = [];
 
@@ -66,14 +74,39 @@ const listTransactionsService = async ({ type, category, startDate, endDate, sea
     conditions.push(`COALESCE(t.notes, '') ILIKE $${values.length}`);
   }
 
-  const result = await pool.query(
-    `${TRANSACTION_SELECT}
-     WHERE ${conditions.join(' AND ')}
-     ORDER BY t.date DESC, t.id DESC`,
-    values
-  );
+  const whereClause = conditions.join(' AND ');
+  const offset = (page - 1) * limit;
+  const countValues = [...values];
+  const dataValues = [...values, limit, offset];
 
-  return result.rows.map(serializeTransaction);
+  const [countResult, result] = await Promise.all([
+    pool.query(
+      `SELECT COUNT(*) AS total_count
+       FROM transactions t
+       WHERE ${whereClause}`,
+      countValues
+    ),
+    pool.query(
+      `${TRANSACTION_SELECT}
+       WHERE ${whereClause}
+       ORDER BY t.date DESC, t.id DESC
+       LIMIT $${values.length + 1}
+       OFFSET $${values.length + 2}`,
+      dataValues
+    ),
+  ]);
+
+  const totalCount = Number(countResult.rows[0].total_count);
+
+  return {
+    transactions: result.rows.map(serializeTransaction),
+    pagination: {
+      page,
+      limit,
+      totalCount,
+      totalPages: totalCount === 0 ? 0 : Math.ceil(totalCount / limit),
+    },
+  };
 };
 
 const getTransactionByIdService = async (transactionId) => {

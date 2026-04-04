@@ -2,11 +2,11 @@ import {
   getDashboardInsightsService,
   getDashboardSummaryService,
 } from '../services/dashboard.service.js';
-import { ApiError, ApiResponse, asyncHandler } from '../utils/index.js';
+import { ApiResponse, asyncHandler } from '../utils/index.js';
 
 const getDashboardSummary = asyncHandler(async (req, res) => {
   // Allow the client to request a specific number of recent transactions, default to 5
-  const limit = req.query.limit ? parseInt(req.query.limit, 10) : 5;
+  const limit = req.query.limit ?? 5;
   const summary = await getDashboardSummaryService({ limit });
   return res
     .status(200)

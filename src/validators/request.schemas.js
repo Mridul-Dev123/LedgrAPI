@@ -188,6 +188,8 @@ const listTransactionsRequest = {
     startDate: dateString.label('startDate'),
     endDate: dateString.label('endDate'),
     search: optionalString('search', 250),
+    page: Joi.number().integer().min(1).default(1).label('page'),
+    limit: Joi.number().integer().min(1).max(100).default(10).label('limit'),
   })
     .custom((value, helpers) => {
       if (value.startDate && value.endDate && value.startDate > value.endDate) {
@@ -287,11 +289,25 @@ const getDashboardInsightsRequest = {
   query: dateRangeQuery,
 };
 
+const getDashboardSummaryRequest = {
+  query: Joi.object({
+    limit: Joi.number().integer().min(1).max(100).default(5).label('limit').messages({
+      'number.base': 'limit must be a valid positive integer',
+      'number.integer': 'limit must be a valid positive integer',
+      'number.min': 'limit must be at least 1',
+      'number.max': 'limit must be less than or equal to 100',
+    }),
+  })
+    .required()
+    .unknown(false),
+};
+
 export {
   changePasswordRequest,
   createTransactionRequest,
   createUserRequest,
   getDashboardInsightsRequest,
+  getDashboardSummaryRequest,
   listTransactionsRequest,
   loginUserRequest,
   registerUserRequest,

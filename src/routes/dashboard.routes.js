@@ -4,7 +4,10 @@ import { getDashboardInsights, getDashboardSummary } from '../controllers/dashbo
 import verifyJWT from '../middleware/auth.js';
 import requireRoles from '../middleware/rbac.js';
 import validate from '../middleware/validate.js';
-import { getDashboardInsightsRequest } from '../validators/request.schemas.js';
+import {
+  getDashboardInsightsRequest,
+  getDashboardSummaryRequest,
+} from '../validators/request.schemas.js';
 
 const dashboardRouter = Router();
 
@@ -18,6 +21,15 @@ dashboardRouter.use(verifyJWT);
  *     tags: [Dashboard]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - name: limit
+ *         in: query
+ *         description: Number of recent transactions to include in the response.
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 5
  *     responses:
  *       200:
  *         description: Dashboard summary fetched successfully.
@@ -39,7 +51,12 @@ dashboardRouter.use(verifyJWT);
  *       500:
  *         $ref: '#/components/responses/InternalServerError'
  */
-dashboardRouter.get('/summary', requireRoles('viewer', 'analyst', 'admin'), getDashboardSummary);
+dashboardRouter.get(
+  '/summary',
+  requireRoles('viewer', 'analyst', 'admin'),
+  validate(getDashboardSummaryRequest),
+  getDashboardSummary
+);
 
 /**
  * @swagger

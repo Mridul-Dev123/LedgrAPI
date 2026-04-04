@@ -34,7 +34,7 @@ const serializeTrendRow = (row, periodKey) =>
     NUMERIC_TREND_KEYS
   );
 
-const getDashboardSummaryService = async () => {
+const getDashboardSummaryService = async ({ limit = 5 } = {}) => {
   const [summaryResult, recentTransactionsResult] = await Promise.all([
     pool.query(
       `SELECT
@@ -62,7 +62,8 @@ const getDashboardSummaryService = async () => {
        JOIN users u ON u.id = t.created_by
        WHERE t.is_deleted = FALSE
        ORDER BY t.date DESC, t.id DESC
-       LIMIT 5`
+       LIMIT $1`,
+      [limit]
     ),
   ]);
 
